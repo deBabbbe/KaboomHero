@@ -60,19 +60,35 @@ scene("game", () => {
     // Level erstellen
     const BLOCK_SIZE = 40;
     
-    // Grundlegendes Level-Layout
-    const levelLayout = [
-        "                                        ",
-        "         E      P   ==    P      E      ",
-        "                                        ",
-        "   E    ==   P   E   ==     P      E    ",
-        "                           =========    ",
-        "    P      E        ==   E     P        ",
-        "      E      ==   E    P     E          ",
-        "         ==   E       P   E   ==        ",
-        "    P   E     P   E     P   E           ",
-        "=================    ==================="
+    // Level-Layouts
+    const levels = [
+        [
+            "                                        ",
+            "         E      P   ==    P      E      ",
+            "                                        ",
+            "   E    ==   P   E   ==     P      E    ",
+            "                           =========    ",
+            "    P      E        ==   E     P        ",
+            "      E      ==   E    P     E          ",
+            "         ==   E       P   E   ==        ",
+            "    P   E     P   E     P   E           ",
+            "=================    ==================="
+        ],
+        [
+            "                                        ",
+            "   E   ==   P   ==   E   ==   P   ==    ",
+            "                                        ",
+            "   ==   P   ==   E   ==   P   ==   E    ",
+            "         ==   E   ==   P   ==   E       ",
+            "   P   ==   ==   ==   ==   ==   P       ",
+            "   ==   ==   ==   ==   ==   ==   ==     ",
+            "   E   ==   P   ==   E   ==   P   ==    ",
+            "   ==   P   ==   E   ==   P   ==   E    ",
+            "=================    ==================="
+        ]
     ];
+    let currentLevel = 0;
+    let levelLayout = levels[currentLevel];
 
     // Level aus Layout generieren
     for (let row = 0; row < levelLayout.length; row++) {
@@ -174,16 +190,30 @@ scene("game", () => {
                 lifespan(1)
             ]);
         } else {
-            // Wenn alle Kräfte gesammelt, zeige Gewinn-Nachricht und beende das Spiel
-            add([
-                text("Alle Kräfte gesammelt! Du hast gewonnen!"),
-                pos(width() / 2, height() / 2),
-                { anchor: "center" },
-                lifespan(3)
-            ]);
-            wait(3, () => {
-                go("win");
-            });
+            // Wenn alle Kräfte gesammelt, nächstes Level oder Gewinn
+            if (currentLevel < levels.length - 1) {
+                add([
+                    text("Level geschafft! Weiter zum nächsten Level..."),
+                    pos(width() / 2, height() / 2),
+                    { anchor: "center" },
+                    lifespan(2)
+                ]);
+                wait(2, () => {
+                    currentLevel++;
+                    // Setze Kräfte zurück, falls gewünscht: Object.keys(POWERS).forEach(k => POWERS[k] = false);
+                    go("game");
+                });
+            } else {
+                add([
+                    text("Alle Kräfte gesammelt! Du hast gewonnen!"),
+                    pos(width() / 2, height() / 2),
+                    { anchor: "center" },
+                    lifespan(3)
+                ]);
+                wait(3, () => {
+                    go("win");
+                });
+            }
         }
     });
 
@@ -256,6 +286,7 @@ scene("win", () => {
         // Setze alle Kräfte zurück
         Object.keys(POWERS).forEach(k => POWERS[k] = false);
         GAME_STATE.lives = 3;
+        currentLevel = 0;
         go("game");
     });
 });
@@ -275,6 +306,7 @@ scene("lose", () => {
     onKeyPress("space", () => {
         Object.keys(POWERS).forEach(k => POWERS[k] = false);
         GAME_STATE.lives = 3;
+        currentLevel = 0;
         go("game");
     });
 });
