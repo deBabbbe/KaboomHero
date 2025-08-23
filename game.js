@@ -14,6 +14,28 @@ loadSprite("hero", "yZIb8O2.png");
 loadSprite("ground", "vWJWmvb.png");
 loadSprite("enemy", "Ei1VnX8.png");
 loadSprite("powerup", "I7xSp7w.png");
+loadSprite("fireball", "c6JFi5Z.png");
+
+// Schießen (nur wenn fireball-Kraft aktiv)
+function setupShooting(player) {
+    onKeyPress("f", () => {
+        if (POWERS.fireball) {
+            add([
+                sprite("fireball"),
+                pos(player.pos.x + 24, player.pos.y + 8),
+                area(),
+                move(RIGHT, 600),
+                offscreen({ destroy: true }),
+                "fireball"
+            ]);
+        }
+    });
+    // Feuerball trifft Gegner
+    onCollide("fireball", "enemy", (fireball, enemy) => {
+        destroy(fireball);
+        destroy(enemy);
+    });
+}
 
 // Spielzustände
 let POWERS = {
@@ -41,14 +63,14 @@ scene("game", () => {
     // Grundlegendes Level-Layout
     const levelLayout = [
         "                                        ",
+        "                P   ==    P             ",
         "                                        ",
-        "                                        ",
-        "                                     P  ",
+        "         ==      P      ==     P      ",
         "                           =========    ",
-        "                    ==                  ",
-        "               ==                       ",
-        "         ==                            ",
-        "    P                                  ",
+        "    P               ==         P        ",
+        "               ==         P             ",
+        "         ==            P      ==        ",
+        "    P         P         P               ",
         "=================    ==================="
     ];
 
@@ -93,7 +115,10 @@ scene("game", () => {
     ]);
     // jumpForce und isJumping separat definieren, um Konflikte mit Kaboom zu vermeiden
     player.jumpForce = 800;
-    player.isJumping = false;
+    // Entferne isJumping komplett, da Kaboom intern eine Komponente mit diesem Namen verwendet
+
+    // Shooting-Mechanik initialisieren
+    setupShooting(player);
 
     // Steuerung
     onKeyDown("left", () => {
@@ -107,7 +132,7 @@ scene("game", () => {
     onKeyPress("space", () => {
         if (player.isGrounded()) {
             player.jump(player.jumpForce);
-            player.isJumping = true;
+            // Entfernt: player.isJumping = true; // Kaboom hat intern eine Komponente mit diesem Namen
             player.doubleJumpAvailable = POWERS.doubleJump;
         } else if (player.doubleJumpAvailable) {
             player.jump(player.jumpForce * 0.8);
@@ -131,12 +156,43 @@ scene("game", () => {
                 { anchor: "center" },
                 lifespan(1)
             ]);
+        } else {
+            // Wenn alle Kräfte gesammelt, zeige Gewinn-Nachricht und beende das Spiel
+            add([
+                text("Alle Kräfte gesammelt! Du hast gewonnen!"),
+                pos(width() / 2, height() / 2),
+                { anchor: "center" },
+                lifespan(3)
+            ]);
+            wait(3, () => {
+                go("win");
+            });
         }
     });
 
     // Kamera folgt dem Spieler
     player.onUpdate(() => {
         camPos(player.pos);
+        // ACHTUNG: isJumping darf nirgends als Funktion verwendet werden!
+    });
+});
+
+// Gewinn-Szene
+scene("win", () => {
+    add([
+        text("Glückwunsch! Du hast alle Kräfte gesammelt!"),
+        pos(width() / 2, height() / 2),
+        { anchor: "center" }
+    ]);
+    add([
+        text("Drücke Leertaste für einen Neustart."),
+        pos(width() / 2, height() / 2 + 40),
+        { anchor: "center" }
+    ]);
+    onKeyPress("space", () => {
+        // Setze alle Kräfte zurück
+        Object.keys(POWERS).forEach(k => POWERS[k] = false);
+        go("game");
     });
 });
 
