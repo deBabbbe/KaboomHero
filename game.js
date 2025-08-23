@@ -52,6 +52,68 @@ let GAME_STATE = {
     lives: 3
 };
 
+// Touch-Steuerung für Mobile
+function setupTouchControls(player, jump) {
+    // Virtuelle Buttons erstellen
+    const btnSize = 60;
+    const y = height() - btnSize - 10;
+    const leftBtn = add([
+        rect(btnSize, btnSize),
+        pos(20, y),
+        color(100, 100, 255),
+        area(),
+        "touchLeft"
+    ]);
+    const rightBtn = add([
+        rect(btnSize, btnSize),
+        pos(100, y),
+        color(100, 255, 100),
+        area(),
+        "touchRight"
+    ]);
+    const jumpBtn = add([
+        rect(btnSize, btnSize),
+        pos(width() - 80, y),
+        color(255, 255, 100),
+        area(),
+        "touchJump"
+    ]);
+    const fireBtn = add([
+        rect(btnSize, btnSize),
+        pos(width() - 160, y),
+        color(255, 100, 100),
+        area(),
+        "touchFire"
+    ]);
+
+    let leftDown = false;
+    let rightDown = false;
+
+    onTouchStart((pos) => {
+        if (leftBtn.hasPoint(pos)) leftDown = true;
+        if (rightBtn.hasPoint(pos)) rightDown = true;
+        if (jumpBtn.hasPoint(pos)) jump();
+        if (fireBtn.hasPoint(pos) && POWERS.fireball) {
+            add([
+                sprite("fireball"),
+                pos(player.pos.x + 24, player.pos.y + 8),
+                area(),
+                move(RIGHT, 600),
+                offscreen({ destroy: true }),
+                "fireball"
+            ]);
+        }
+    });
+    onTouchEnd((pos) => {
+        if (leftBtn.hasPoint(pos)) leftDown = false;
+        if (rightBtn.hasPoint(pos)) rightDown = false;
+    });
+    onUpdate(() => {
+        if (leftDown) player.move(-player.speed * (POWERS.superSpeed ? 1.5 : 1), 0);
+        if (rightDown) player.move(player.speed * (POWERS.superSpeed ? 1.5 : 1), 0);
+    });
+}
+
 // Szene erstellen
 scene("game", () => {
     // Schwerkraft definieren
@@ -144,6 +206,11 @@ scene("game", () => {
 
     // Shooting-Mechanik initialisieren
     setupShooting(player);
+
+    // Touch-Steuerung für Mobile
+    if ("ontouchstart" in window) {
+        setupTouchControls(player, jump);
+    }
 
     // Steuerung
     onKeyDown("left", () => {
