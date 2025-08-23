@@ -63,14 +63,14 @@ scene("game", () => {
     // Grundlegendes Level-Layout
     const levelLayout = [
         "                                        ",
-        "                P   ==    P             ",
+        "         E      P   ==    P      E      ",
         "                                        ",
-        "         ==      P      ==     P      ",
+        "   E    ==   P   E   ==     P      E    ",
         "                           =========    ",
-        "    P               ==         P        ",
-        "               ==         P             ",
-        "         ==            P      ==        ",
-        "    P         P         P               ",
+        "    P      E        ==   E     P        ",
+        "      E      ==   E    P     E          ",
+        "         ==   E       P   E   ==        ",
+        "    P   E     P   E     P   E           ",
         "=================    ==================="
     ];
 
@@ -96,6 +96,15 @@ scene("game", () => {
                     pos(posX, posY),
                     area(),
                     "powerup"
+                ]);
+            }
+            if (char === "E") {
+                add([
+                    sprite("enemy"),
+                    pos(posX, posY),
+                    area(),
+                    body(),
+                    "enemy"
                 ]);
             }
         }
@@ -130,6 +139,14 @@ scene("game", () => {
     });
 
     onKeyPress("space", () => {
+       jump();
+    });
+
+    onKeyPress("up", () => {
+        jump();
+    });
+
+    function jump() {
         if (player.isGrounded()) {
             player.jump(player.jumpForce);
             // Entfernt: player.isJumping = true; // Kaboom hat intern eine Komponente mit diesem Namen
@@ -140,7 +157,7 @@ scene("game", () => {
         } else if (POWERS.flight) {
             player.jump(player.jumpForce * 0.5);
         }
-    });
+    }
 
     // Kollisionen
     player.onCollide("powerup", (p) => {
@@ -175,6 +192,52 @@ scene("game", () => {
         camPos(player.pos);
         // ACHTUNG: isJumping darf nirgends als Funktion verwendet werden!
     });
+
+    // Gegner bewegen
+    onUpdate("enemy", (enemy) => {
+        if (!enemy.dir) enemy.dir = 1;
+        enemy.move(enemy.dir * 60, 0);
+        if (enemy.pos.x < 0 || enemy.pos.x > width() - 32) {
+            enemy.dir *= -1;
+        }
+    });
+
+    // Spieler-Gegner-Kollision mit Lebenssystem
+    let invulnerable = false;
+    player.onCollide("enemy", (enemy) => {
+        if (player.pos.y < enemy.pos.y) {
+            destroy(enemy);
+        } else if (!invulnerable) {
+            GAME_STATE.lives--;
+            invulnerable = true;
+            player.use(color(255, 0, 0));
+            wait(1, () => {
+                invulnerable = false;
+                player.use(color(255, 255, 255));
+            });
+            if (GAME_STATE.lives <= 0) {
+                go("lose");
+            }
+        }
+    });
+
+    // Gegner bewegen
+    onUpdate("enemy", (enemy) => {
+        if (!enemy.dir) enemy.dir = 1;
+        enemy.move(enemy.dir * 60, 0);
+        if (enemy.pos.x < 0 || enemy.pos.x > width() - 32) {
+            enemy.dir *= -1;
+        }
+    });
+
+    // Spieler-Gegner-Kollision
+    player.onCollide("enemy", (enemy) => {
+        if (player.pos.y < enemy.pos.y) {
+            destroy(enemy);
+        } else {
+            go("win");
+        }
+    });
 });
 
 // Gewinn-Szene
@@ -192,6 +255,26 @@ scene("win", () => {
     onKeyPress("space", () => {
         // Setze alle Kräfte zurück
         Object.keys(POWERS).forEach(k => POWERS[k] = false);
+        GAME_STATE.lives = 3;
+        go("game");
+    });
+});
+
+// Verloren-Szene
+scene("lose", () => {
+    add([
+        text("Game Over! Du hast verloren."),
+        pos(width() / 2, height() / 2),
+        { anchor: "center" }
+    ]);
+    add([
+        text("Drücke Leertaste für einen Neustart."),
+        pos(width() / 2, height() / 2 + 40),
+        { anchor: "center" }
+    ]);
+    onKeyPress("space", () => {
+        Object.keys(POWERS).forEach(k => POWERS[k] = false);
+        GAME_STATE.lives = 3;
         go("game");
     });
 });
