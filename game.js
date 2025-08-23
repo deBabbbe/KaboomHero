@@ -86,12 +86,12 @@ function setupTouchControls(player, jump) {
         "touchFire"
     ]);
 
-    let leftDown = false;
-    let rightDown = false;
-
+    // Touch-Events für kontinuierliche Bewegung (Multi-Touch-fähig)
+    let leftActive = false;
+    let rightActive = false;
     onTouchStart((pos) => {
-        if (leftBtn.hasPoint(pos)) leftDown = true;
-        if (rightBtn.hasPoint(pos)) rightDown = true;
+        if (leftBtn.hasPoint(pos)) leftActive = true;
+        if (rightBtn.hasPoint(pos)) rightActive = true;
         if (jumpBtn.hasPoint(pos)) jump();
         if (fireBtn.hasPoint(pos) && POWERS.fireball) {
             add([
@@ -105,12 +105,12 @@ function setupTouchControls(player, jump) {
         }
     });
     onTouchEnd((pos) => {
-        if (leftBtn.hasPoint(pos)) leftDown = false;
-        if (rightBtn.hasPoint(pos)) rightDown = false;
+        if (leftBtn.hasPoint(pos)) leftActive = false;
+        if (rightBtn.hasPoint(pos)) rightActive = false;
     });
     onUpdate(() => {
-        if (leftDown) player.move(-player.speed * (POWERS.superSpeed ? 1.5 : 1), 0);
-        if (rightDown) player.move(player.speed * (POWERS.superSpeed ? 1.5 : 1), 0);
+        if (leftActive) player.move(-player.speed * (POWERS.superSpeed ? 1.5 : 1), 0);
+        if (rightActive) player.move(player.speed * (POWERS.superSpeed ? 1.5 : 1), 0);
     });
 }
 
