@@ -122,33 +122,6 @@ scene("game", () => {
     // Level erstellen
     const BLOCK_SIZE = 40;
     
-    // Level-Layouts
-    const levels = [
-        [
-            "                                        ",
-            "         E      P   ==    P      E      ",
-            "                                        ",
-            "   E    ==   P   E   ==     P      E    ",
-            "                           =========    ",
-            "    P      E        ==   E     P        ",
-            "      E      ==   E    P     E          ",
-            "         ==   E       P   E   ==        ",
-            "    P   E     P   E     P   E           ",
-            "=================    ==================="
-        ],
-        [
-            "                                        ",
-            "   E   ==   P   ==   E   ==   P   ==    ",
-            "                                        ",
-            "   ==   P   ==   E   ==   P   ==   E    ",
-            "         ==   E   ==   P   ==   E       ",
-            "   P   ==   ==   ==   ==   ==   P       ",
-            "   ==   ==   ==   ==   ==   ==   ==     ",
-            "   E   ==   P   ==   E   ==   P   ==    ",
-            "   ==   P   ==   E   ==   P   ==   E    ",
-            "=================    ==================="
-        ]
-    ];
     let currentLevel = 0;
     let levelLayout = levels[currentLevel];
 
