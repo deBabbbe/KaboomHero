@@ -333,6 +333,7 @@ scene("win", () => {
 
 // Verloren-Szene
 scene("lose", () => {
+    setBackground([200, 50, 50]);
     add([
         text("Game Over! Du hast verloren."),
         pos(width() / 2, height() / 2),
