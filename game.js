@@ -1,8 +1,9 @@
-// Initialisiere Kaboom
+const defaultBackground = [135, 206, 235];
+
 kaboom({
     width: 960,
     height: 600,
-    background: [135, 206, 235],
+    background: defaultBackground,
     root: document.getElementById("game"),
     global: true,
     scale: 1
@@ -348,6 +349,7 @@ scene("lose", () => {
         Object.keys(POWERS).forEach(k => POWERS[k] = false);
         GAME_STATE.lives = 3;
         currentLevel = 0;
+        setBackground(defaultBackground);
         go("game");
     });
 });
